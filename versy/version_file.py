@@ -1,13 +1,14 @@
 from pathlib import Path
+import os
 import safer
 
 PREFIX = '__version__ = '
 VERSION = 'VERSION'
 
 
-def read(all_files):
+def read(root):
     results = []
-    for filepath in all_files:
+    for filepath in _all_files(root):
         version = _get_version(filepath)
         if version:
             results.append((filepath, version))
@@ -25,6 +26,19 @@ def write(path, version):
         _write_file(path, version)
     else:
         _write_python(path, version)
+
+
+def _all_files(root):
+    root = Path(root)
+    for directory, sub_dirs, files in os.walk(root):
+        path = Path(directory)
+        if path == root:
+            sub_dirs[:] = (i for i in sub_dirs if i not in ('build', 'dist'))
+
+        sub_dirs[:] = (i for i in sub_dirs if not i.startswith('.'))
+        files[:] = (i for i in files if not i.startswith('.'))
+
+        yield from (path / f for f in files)
 
 
 def _get_version(filepath, filename):

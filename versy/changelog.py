@@ -1,19 +1,19 @@
 from datetime import date
 import safer
+import sys
 
 NAMES = 'CHANGELOG', 'CHANGES', 'changelog', 'HISTORY', 'NEWS'
 SUFFIXES = {'', '.rst', '.txt', '.md'}
 
 
-def find(root):
-    files = list(root.iterdir())
+def _find(path):
     for name in NAMES:
-        for f in files:
+        for f in path.iterdir():
             if f.stem == name and f.suffix in SUFFIXES:
-                return
+                return f
 
 
-def update(filename, old_version, new_version, commits):
+def _update(filename, old_version, new_version, commits):
     def add(print):
         today = date.today().strftime('%y/%m/%d')
         title = 'v%s - %s' % (new_version, today)
@@ -35,3 +35,11 @@ def update(filename, old_version, new_version, commits):
                 printed = True
 
             print(line)
+
+
+def update(path, old_version, new_version, commits):
+    file = _find(path)
+    if file:
+        _update(file, old_version, new_version, commits)
+    else:
+        print('No changelog found', file=sys.stderr)
