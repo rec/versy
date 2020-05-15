@@ -1,5 +1,5 @@
 from unittest import TestCase
-import versy
+from versy import versy
 
 
 class TestVersy(TestCase):
