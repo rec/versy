@@ -41,9 +41,9 @@ def _all_files(root):
         yield from (path / f for f in files)
 
 
-def _get_version(filepath, filename):
-    if filename == VERSION:
-        return Path(filepath).read_text().strip()
+def _get_version(filepath):
+    if filepath.name == VERSION:
+        return filepath.read_text().strip()
 
     if not filepath.suffix == '.py':
         return
@@ -70,11 +70,16 @@ def _write_python(path, version):
     with safer.printer(path, 'w') as _print:
         for i, line in enumerate(lines):
             first, *rest = line.strip().split(PREFIX)
-            if first:
+            if first or not rest:
                 _print(line)
             else:
+                print('FOUND', i, line)
                 if found_line >= 0:
-                    raise ValueError('More than one version was found')
+                    raise ValueError(
+                        'More than one version was found',
+                        str(found_line),
+                        str(i),
+                    )
                 found_line = i + 1
                 _print("%s'%s'" % (PREFIX, version))
         if found_line < 0:
