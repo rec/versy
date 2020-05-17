@@ -1,8 +1,8 @@
-import semver
-import sys
 from . import changelog
 from . import git
 from . import version_file
+import semver
+import sys
 
 PREFIX = '__version__ = '
 VERSION = 'VERSION'
