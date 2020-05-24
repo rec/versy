@@ -1,4 +1,3 @@
-
 # import safer
 from bs4 import BeautifulSoup
 import requests

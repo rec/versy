@@ -22,10 +22,16 @@ def read(root):
 
 
 def write(path, version):
-    if path.name == VERSION:
-        _write_file(path, version)
-    else:
-        _write_python(path, version)
+    with safer.printer(path) as _print:
+        if path.name == VERSION:
+            _print(version)
+        else:
+            for line in Path(path).read_text().splitlines():
+                if line.startswith(PREFIX):
+                    line = "%s'%s'" % (PREFIX, version)
+                _print(line)
+
+    print('Rewrote', path)
 
 
 def _all_files(root):
@@ -41,48 +47,24 @@ def _all_files(root):
         yield from (path / f for f in files)
 
 
-def _get_version(filepath):
-    if filepath.name == VERSION:
-        return filepath.read_text().strip()
+def _get_version(path):
+    if path.name == VERSION:
+        return path.read_text().strip()
 
-    if not filepath.suffix == '.py':
+    if not path.suffix == '.py':
         return
 
-    lines = [i.strip() for i in filepath.read_text().splitlines() if i.strip()]
-    for line in lines:
-        first, *rest = line.split(PREFIX, maxsplit=1)
-        if not first:
-            body = rest[0].strip().split('#')[0]
-            for quote in '"', '\'':
-                if len(body) > 2 and body[0] == body[-1] == quote:
-                    body = body[1:-1]
-            return body
+    lines = [s for s in path.read_text().splitlines() if s.startswith(PREFIX)]
 
+    if not lines:
+        return
+    if len(lines) > 1:
+        raise ValueError('More than one __version__ = line')
 
-def _write_file(path, version):
-    Path(path).write_text('%s\n' % version)
-    print('Rewrote', path)
+    line = lines[0][len(PREFIX) :].split('#')[0].strip()
 
+    for quote in '"', '\'':
+        if len(line) > 2 and line[0] == line[-1] == quote:
+            line = line[1:-1]
 
-def _write_python(path, version):
-    lines = Path(path).read_text().splitlines()
-    found_line = -1
-    with safer.printer(path, 'w') as _print:
-        for i, line in enumerate(lines):
-            first, *rest = line.strip().split(PREFIX)
-            if first or not rest:
-                _print(line)
-            else:
-                print('FOUND', i, line)
-                if found_line >= 0:
-                    raise ValueError(
-                        'More than one version was found',
-                        str(found_line),
-                        str(i),
-                    )
-                found_line = i + 1
-                _print("%s'%s'" % (PREFIX, version))
-        if found_line < 0:
-            raise ValueError('No version found')
-
-    print('Rewrote %s:%d' % (path, found_line))
+    return line

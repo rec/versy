@@ -1,5 +1,1 @@
-#!/usr/bin/env python3
-import versy
-
-if __name__ == '__main__':
-    versy.versy()
+versy/__main__.py
