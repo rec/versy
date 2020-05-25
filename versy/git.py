@@ -1,4 +1,3 @@
-from . import DRY_RUN
 import subprocess
 
 SUB = {'stderr': subprocess.DEVNULL, 'encoding': 'utf8'}
@@ -31,12 +30,10 @@ def get_commits(version, cwd, max_commits=256, commit_block=2):
     return commits
 
 
-def commit(files, message):
+def commit(files, message, dry_run):
     cmd = ('git', 'commit') + tuple(files) + ('-m', message)
-    if DRY_RUN:
-        print('$', *cmd)
-    else:
-        print('$', *cmd)
+    print('$', *cmd)
+    if not dry_run:
         subprocess.check_output(cmd, encoding='utf8')
 
 

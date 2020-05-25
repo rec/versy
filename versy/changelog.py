@@ -1,38 +1,60 @@
 from . import git
 from datetime import date
 from pathlib import Path
-import safer
 
-NAMES = 'CHANGELOG', 'CHANGELIST', 'CHANGES', 'changelog', 'HISTORY', 'NEWS'
+NAMES = 'CHANGELOG', 'CHANGELIST', 'CHANGES', 'changelog'
 SUFFIXES = {'', '.rst', '.txt', '.md'}
 
 
-def update(path, old_version, new_version, commits, print=print):
-    file = _find(path)
-    commits = git.get_commits(old_version, path)
-    with safer.printer(file) as print:
-        _update(file, old_version, new_version, commits, print)
+class ChangeLog:
+    def __init__(self, path, version, file, printer, message):
+        self.path = path
+        self.version = version
+        self.printer = printer
+        self.file = file
+        self.message = message
 
-    return file
+        if not self.file:
+            files = []
+            for name in NAMES:
+                for f in Path(path).iterdir():
+                    if f.stem == name and f.suffix in SUFFIXES:
+                        files.append(f)
+            if len(files) > 1:
+                raise ValueError('Multiple changelogs: ' + ' '.join(files))
+            if files:
+                self.file = files[0]
 
+    def new(self):
+        file = Path(self.file or NAMES[0])
+        if file.exists():
+            raise ValueError('File %s already exists' % file.absolute())
 
-def new(path, version):
-    pass
+        with self.printer(file) as print:
+            self._entry(self.version, [], print)
+            print('* %s' % (self.message or 'First release'))
 
+    def update(self, new_version):
+        if not self.file:
+            msg = 'Couldn\'t find a CHANGE file in %s' % self.path
+            raise FileNotFoundError(msg)
 
-def _find(path):
-    for name in NAMES:
-        for f in Path(path).iterdir():
-            if f.stem == name and f.suffix in SUFFIXES:
-                return f
-    raise FileNotFoundError('Couldn\'t find a CHANGE file in %s' % path)
+        commits = git.get_commits(self.version, self.path)
+        printed = False
+        with self.printer(self.file) as print:
+            for line in self.file.read_text().splitlines():
+                if not printed and self.version in line:
+                    printed = True
+                    self._entry(new_version, commits, print)
+                print(line)
 
+            if not printed:
+                self._entry(new_version, commits, print)
 
-def _update(filename, old_version, new_version, commits, print=print):
-    def add():
+    def _entry(self, version, commits, print):
         today = date.today().strftime('%y/%m/%d')
-        title = 'v%s - %s' % (new_version, today)
-        if filename.suffix == '.rst':
+        title = 'v%s - %s' % (version, today)
+        if self.file == '.rst':
             print(title)
             print('=' * len(title))
         else:
@@ -40,11 +62,5 @@ def _update(filename, old_version, new_version, commits, print=print):
         print()
         for commit in commits:
             print('*', commit)
-        print()
-
-    printed = False
-    for line in filename.read_text().splitlines():
-        if not printed and old_version in line:
-            add()
-            printed = True
-        print(line)
+        if commits:
+            print()

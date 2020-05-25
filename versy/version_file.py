@@ -1,70 +1,60 @@
-from pathlib import Path
-import os
-import safer
+import wolk
 
 PREFIX = '__version__ = '
 VERSION = 'VERSION'
 
 
-def read(root):
-    results = []
-    for filepath in _all_files(root):
-        version = _get_version(filepath)
-        if version:
-            results.append((filepath, version))
+class VersionFile:
+    def __init__(self, root, printer):
+        self.printer = printer
 
-    if not results:
-        raise ValueError('No version files found')
-    if len(results) > 1:
-        raise ValueError('More than one version file found', str(results))
+        results = []
+        for file in wolk.python(root):
+            version = _get_version(file)
+            if version:
+                results.append((file, version))
 
-    return results[0]
+        if not results:
+            raise ValueError('No version files found')
 
+        if len(results) > 1:
+            raise ValueError('More than one version file found', str(results))
 
-def write(path, version):
-    with safer.printer(path) as _print:
-        if path.name == VERSION:
-            _print(version)
-        else:
-            for line in Path(path).read_text().splitlines():
-                if line.startswith(PREFIX):
-                    line = "%s'%s'" % (PREFIX, version)
-                _print(line)
+        self.file, self.version = results[0]
 
-    print('Rewrote', path)
+    def write(self, version):
+        with self.printer(self.file) as _print:
+            if self.file.name == VERSION:
+                _print(version)
 
+            else:
+                for line in self.file.read_text().splitlines():
+                    if line.startswith(PREFIX):
+                        line = "%s'%s'" % (PREFIX, version)
+                    _print(line)
 
-def _all_files(root):
-    root = Path(root)
-    for directory, sub_dirs, files in os.walk(root):
-        path = Path(directory)
-        if path == root:
-            sub_dirs[:] = (i for i in sub_dirs if i not in ('build', 'dist'))
-
-        sub_dirs[:] = (i for i in sub_dirs if not i.startswith('.'))
-        files[:] = (i for i in files if not i.startswith('.'))
-
-        yield from (path / f for f in files)
+        print('Rewrote', self.file)
 
 
-def _get_version(path):
-    if path.name == VERSION:
-        return path.read_text().strip()
+def _get_version(file):
+    if file.name == VERSION:
+        return file.read_text().strip()
 
-    if not path.suffix == '.py':
+    if not file.suffix == '.py':
         return
 
-    lines = [s for s in path.read_text().splitlines() if s.startswith(PREFIX)]
+    lines = [s for s in file.read_text().splitlines() if s.startswith(PREFIX)]
 
-    if not lines:
-        return
-    if len(lines) > 1:
-        raise ValueError('More than one __version__ = line')
+    if lines:
+        if len(lines) > 1:
+            raise ValueError('More than one line starting "%s"' % PREFIX)
 
-    line = lines[0][len(PREFIX) :].split('#')[0].strip()
+        line = lines[0]
+        line = line[len(PREFIX) :]
+        line = line.split('#')[0].strip()
 
-    for quote in '"', '\'':
-        if len(line) > 2 and line[0] == line[-1] == quote:
-            line = line[1:-1]
+        for quote in '"', "'":
+            if len(line) > 2 and line[0] == line[-1] == quote:
+                line = line[1:-1]
 
-    return line
+        return line
