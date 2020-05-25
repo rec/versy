@@ -10,7 +10,12 @@ class VersionFile:
 
         results = []
         for file in wolk.python(root):
-            version = _get_version(file)
+            if file.name == VERSION:
+                version = file.read_text().strip()
+            elif file.suffix == '.py':
+                version = _get_version(file)
+            else:
+                version = None
             if version:
                 results.append((file, version))
 
@@ -37,24 +42,20 @@ class VersionFile:
 
 
 def _get_version(file):
-    if file.name == VERSION:
-        return file.read_text().strip()
-
-    if not file.suffix == '.py':
-        return
-
     lines = [s for s in file.read_text().splitlines() if s.startswith(PREFIX)]
 
-    if lines:
-        if len(lines) > 1:
-            raise ValueError('More than one line starting "%s"' % PREFIX)
+    if not lines:
+        return
 
-        line = lines[0]
-        line = line[len(PREFIX) :]
-        line = line.split('#')[0].strip()
+    if len(lines) > 1:
+        raise ValueError('More than one line starting "%s"' % PREFIX)
 
-        for quote in '"', "'":
-            if len(line) > 2 and line[0] == line[-1] == quote:
-                line = line[1:-1]
+    line = lines[0]
+    line = line[len(PREFIX) :]
+    line = line.split('#')[0].strip()
 
-        return line
+    for quote in '"', "'":
+        if len(line) > 2 and line[0] == line[-1] == quote:
+            line = line[1:-1]
+
+    return line

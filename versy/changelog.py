@@ -7,8 +7,8 @@ SUFFIXES = {'', '.rst', '.txt', '.md'}
 
 
 class ChangeLog:
-    def __init__(self, path, version, file, printer, message):
-        self.path = path
+    def __init__(self, root, version, file, printer, message):
+        self.root = root
         self.version = version
         self.printer = printer
         self.file = file
@@ -17,7 +17,7 @@ class ChangeLog:
         if not self.file:
             files = []
             for name in NAMES:
-                for f in Path(path).iterdir():
+                for f in Path(root).iterdir():
                     if f.stem == name and f.suffix in SUFFIXES:
                         files.append(f)
             if len(files) > 1:
@@ -26,7 +26,7 @@ class ChangeLog:
                 self.file = files[0]
 
     def new(self):
-        file = Path(self.file or NAMES[0])
+        file = Path(self.file or self.root / NAMES[0])
         if file.exists():
             raise ValueError('File %s already exists' % file.absolute())
 
@@ -36,22 +36,34 @@ class ChangeLog:
 
     def update(self, new_version):
         if not self.file:
-            msg = 'Couldn\'t find a CHANGE file in %s' % self.path
+            msg = 'Couldn\'t find a CHANGE file in %s' % self.root
             raise FileNotFoundError(msg)
 
-        commits = git.get_commits(self.version, self.path)
+        if self.message:
+            messages = [self.message]
+        else:
+            messages = git.get_commits(self.version, self.root)
+
         printed = False
+        needs_empty_line = False
         with self.printer(self.file) as print:
             for line in self.file.read_text().splitlines():
                 if not printed and self.version in line:
                     printed = True
-                    self._entry(new_version, commits, print)
+                    if needs_empty_line:
+                        print()
+                    self._entry(new_version, messages, print)
+                    if messages:
+                        print()
                 print(line)
+                needs_empty_line = bool(line.strip())
 
             if not printed:
-                self._entry(new_version, commits, print)
+                if needs_empty_line:
+                    print()
+                self._entry(new_version, messages, print)
 
-    def _entry(self, version, commits, print):
+    def _entry(self, version, messages, print):
         today = date.today().strftime('%y/%m/%d')
         title = 'v%s - %s' % (version, today)
         if self.file == '.rst':
@@ -60,7 +72,5 @@ class ChangeLog:
         else:
             print('##', title)
         print()
-        for commit in commits:
-            print('*', commit)
-        if commits:
-            print()
+        for message in messages:
+            print('*', message)
