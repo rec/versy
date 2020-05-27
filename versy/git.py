@@ -31,10 +31,14 @@ def get_commits(version, cwd, max_commits=256, commit_block=2):
 
 
 def commit(files, message, dry_run):
-    cmd = ('git', 'commit') + tuple(files) + ('-m', message)
-    print('$', *cmd)
-    if not dry_run:
-        subprocess.check_output(cmd, encoding='utf8')
+
+    for cmd in (
+        ('git', 'add') + tuple(files),
+        ('git', 'commit', '-m', message),
+    ):
+        print('$', *cmd)
+        if not dry_run:
+            subprocess.check_output(cmd)
 
 
 if __name__ == '__main__':

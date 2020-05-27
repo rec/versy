@@ -32,11 +32,10 @@ def versy(action, changelog, dry_run, message, path, verbose):
         git.commit([cl.file], msg, dry_run)
     else:
         new_version = str(semver.bump(version, action))
-        print('Version', version, '->', new_version, 'in', vfile.file)
-
         cl.update(new_version)
         vfile.write(new_version)
-        msg = 'New version v%s' % new_version
+        print('Version', version, '->', new_version, 'in', vfile.file)
+
         git.commit([vfile.file, cl.file], msg, dry_run)
 
 
@@ -46,7 +45,10 @@ def _dry_printer(file):
 
     yield functools.partial(print, file=fp)
 
-    before = file.read_text().splitlines()
+    if file.exists():
+        before = file.read_text().splitlines()
+    else:
+        before = []
     after = fp.getvalue().splitlines()
 
     print()

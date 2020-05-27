@@ -34,6 +34,8 @@ class ChangeLog:
             self._entry(self.version, [], print)
             print('* %s' % (self.message or 'First release'))
 
+        self.file = file
+
     def update(self, new_version):
         if not self.file:
             msg = 'Couldn\'t find a CHANGE file in %s' % self.root
