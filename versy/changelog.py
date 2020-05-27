@@ -8,7 +8,7 @@ SUFFIXES = {'', '.rst', '.txt', '.md'}
 
 class ChangeLog:
     def __init__(self, root, version, file, printer, message):
-        self.root = root
+        self.root = Path(root)
         self.version = version
         self.printer = printer
         self.file = file
@@ -17,7 +17,7 @@ class ChangeLog:
         if not self.file:
             files = []
             for name in NAMES:
-                for f in Path(root).iterdir():
+                for f in self.root.iterdir():
                     if f.stem == name and f.suffix in SUFFIXES:
                         files.append(f)
             if len(files) > 1:
