@@ -17,6 +17,9 @@ __version__ = '0.9.0'
 def versy(action, changelog, dry_run, message, path, verbose):
     printer = _dry_printer if dry_run else _printer
 
+    if not dry_run:
+        git.check_clean_workspace()
+
     vfile = VersionFile(path, printer)
     version = semver.semver(vfile.version)
 
@@ -28,7 +31,7 @@ def versy(action, changelog, dry_run, message, path, verbose):
 
     if action == 'new':
         cl.new()
-        msg = 'First release version v%s' % version
+        msg = 'Version v%s' % version
         git.commit([cl.file], msg, dry_run)
     else:
         new_version = str(semver.bump(version, action))
@@ -36,6 +39,7 @@ def versy(action, changelog, dry_run, message, path, verbose):
         vfile.write(new_version)
         print('Version', version, '->', new_version, 'in', vfile.file)
 
+        msg = 'Version v%s' % new_version
         git.commit([vfile.file, cl.file], msg, dry_run)
 
 

@@ -1,4 +1,4 @@
-import versy
+from versy import versy
 
 _classifiers = [
     'Development Status :: 4 - Beta',

@@ -23,7 +23,8 @@ class VersionFile:
             raise ValueError('No version files found')
 
         if len(results) > 1:
-            raise ValueError('More than one version file found', str(results))
+            res = ', '.join('{1} in {0}'.format(*r) for r in results)
+            raise ValueError('More than one version file found: ' + res)
 
         self.file, self.version = results[0]
 

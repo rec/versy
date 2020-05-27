@@ -30,8 +30,14 @@ def get_commits(version, cwd, max_commits=256, commit_block=2):
     return commits
 
 
-def commit(files, message, dry_run):
+def check_clean_workspace():
+    try:
+        subprocess.check_output('git diff-index --quiet HEAD --'.split())
+    except subprocess.CalledProcessError:
+        raise ValueError('Cannot create new version with changes in workspace')
 
+
+def commit(files, message, dry_run):
     for cmd in (
         ('git', 'add') + tuple(files),
         ('git', 'commit', '-m', message),
