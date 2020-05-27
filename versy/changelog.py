@@ -42,7 +42,7 @@ class ChangeLog:
         if self.message:
             messages = [self.message]
         else:
-            messages = git.get_commits(self.version, self.root)
+            messages = git.get_commits(str(self.version), self.root)
 
         printed = False
         needs_empty_line = False

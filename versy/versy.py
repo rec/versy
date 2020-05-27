@@ -3,6 +3,9 @@ from . import semver
 from .changelog import ChangeLog
 from .version_file import VersionFile
 import contextlib
+import functools
+import io
+import myers
 import safer
 
 PREFIX = '__version__ = '
@@ -11,8 +14,8 @@ ACTIONS = 'patch', 'minor', 'major', 'new', 'show'
 __version__ = '0.9.0'
 
 
-def versy(action, changelog, dry_run, message, path):
-    printer = _dry_printer if dry_run else safer.printer
+def versy(action, changelog, dry_run, message, path, verbose):
+    printer = _dry_printer if dry_run else _printer
 
     vfile = VersionFile(path, printer)
     version = semver.semver(vfile.version)
@@ -21,7 +24,7 @@ def versy(action, changelog, dry_run, message, path):
         print('Version', version, 'found in', vfile.file)
         return
 
-    cl = ChangeLog(path, version, changelog, printer, message)
+    cl = ChangeLog(path, str(version), changelog, printer, message)
 
     if action == 'new':
         cl.new()
@@ -31,7 +34,7 @@ def versy(action, changelog, dry_run, message, path):
         new_version = str(semver.bump(version, action))
         print('Version', version, '->', new_version, 'in', vfile.file)
 
-        cl = cl.update(new_version)
+        cl.update(new_version)
         vfile.write(new_version)
         msg = 'New version v%s' % new_version
         git.commit([vfile.file, cl.file], msg, dry_run)
@@ -39,8 +42,23 @@ def versy(action, changelog, dry_run, message, path):
 
 @contextlib.contextmanager
 def _dry_printer(file):
-    def _print(*args, **kwds):
-        print(' ', *args, **kwds)
+    fp = io.StringIO()
 
+    yield functools.partial(print, file=fp)
+
+    before = file.read_text().splitlines()
+    after = fp.getvalue().splitlines()
+
+    print()
+    print(60 * '-')
+    print()
     print('%s:' % file)
-    yield _print
+    print()
+    print(*myers.diff(before, after, context=2, format=True), sep='\n')
+
+
+@contextlib.contextmanager
+def _printer(file):
+    with safer.printer(file) as _print:
+        yield _print
+    print('Wrote %s' % file)

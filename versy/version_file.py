@@ -38,8 +38,6 @@ class VersionFile:
                         line = "%s'%s'" % (PREFIX, version)
                     _print(line)
 
-        print('Rewrote', self.file)
-
 
 def _get_version(file):
     lines = [s for s in file.read_text().splitlines() if s.startswith(PREFIX)]
