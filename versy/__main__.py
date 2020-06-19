@@ -3,6 +3,8 @@ import argparse
 import sys
 import traceback
 
+ACTIONS = versy.ACTIONS + ['<new version number>']
+
 
 def main(args=None):
     p = argparse.ArgumentParser(description=_DESCRIPTION)
@@ -25,11 +27,12 @@ def main(args=None):
 
 
 _DESCRIPTION = """Update the version number and CHANGELOG of the program"""
-_ACTIONS_HELP = """"""
-_CHANGELOG_HELP = """"""
-_MESSAGE_HELP = """"""
-_PATH_HELP = """"""
-_VERBOSE_HELP = """"""
+_ACTIONS_HELP = 'Actions are: ' + ', '.join(ACTIONS)
+_CHANGELOG_HELP = """Specify the name of a new CHANGELOG"""
+_MESSAGE_HELP = """\
+Override the default CHANGELOG message from the git commit list"""
+_PATH_HELP = """Root directory to search for a version number"""
+_VERBOSE_HELP = """Print more stuff"""
 _DRY_RUN_HELP = """Don't actually make the changes, just print the diffs"""
 
 
