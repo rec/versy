@@ -7,12 +7,13 @@ SUFFIXES = {'', '.rst', '.txt', '.md'}
 
 
 class ChangeLog:
-    def __init__(self, root, version, file, printer, message):
+    def __init__(self, root, version, file, printer, message, verbose=False):
         self.root = Path(root)
         self.version = version
         self.printer = printer
         self.file = file
         self.message = message
+        self.verbose = verbose
 
         if not self.file:
             files = []
@@ -25,14 +26,23 @@ class ChangeLog:
             if files:
                 self.file = files[0]
 
+    def log(self, *args, **kwds):
+        if self.verbose:
+            print(*args, **kwds)
+
+    def log_print(self, *args, **kwds):
+        self._print(*args, **kwds)
+        self.log(' ', *args, **kwds)
+
     def new(self):
         file = Path(self.file or self.root / NAMES[0])
         if file.exists():
             raise ValueError('File %s already exists' % file.absolute())
 
-        with self.printer(file) as print:
-            self._entry(self.version, [], print)
-            print('* %s' % (self.message or 'First release'))
+        self.log(f'Creating {file}:')
+        with self.printer(file) as self._print:
+            self._entry(self.version, [])
+            self.log_print('* %s' % (self.message or 'First release'))
 
         self.file = file
 
@@ -45,34 +55,38 @@ class ChangeLog:
             messages = [self.message]
         else:
             messages = git.get_commits(str(self.version), self.root)
+            messages = messages or [f'New version {self.version}']
 
         printed = False
         needs_empty_line = False
-        with self.printer(self.file) as print:
+        with self.printer(self.file) as self._print:
+            print(f'Writing {self.file}')
+            if self.verbose:
+                print()
             for line in self.file.read_text().splitlines():
                 if not printed and self.version in line:
                     printed = True
                     if needs_empty_line:
-                        print()
-                    self._entry(new_version, messages, print)
+                        self._print()
+                    self._entry(new_version, messages)
                     if messages:
-                        print()
-                print(line)
+                        self._print()
+                self._print(line)
                 needs_empty_line = bool(line.strip())
 
             if not printed:
                 if needs_empty_line:
-                    print()
-                self._entry(new_version, messages, print)
+                    self._print()
+                self._entry(new_version, messages)
 
-    def _entry(self, version, messages, print):
+    def _entry(self, version, messages):
         today = date.today().strftime('%y/%m/%d')
         title = 'v%s - %s' % (version, today)
-        if self.file == '.rst':
-            print(title)
-            print('=' * len(title))
+        if self.file and self.file.suffix == '.rst':
+            self.log_print(title)
+            self.log_print('=' * len(title))
         else:
-            print('##', title)
-        print()
+            self.log_print('##', title)
+        self.log_print()
         for message in messages:
-            print('*', message)
+            self.log_print('*', message)

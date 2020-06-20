@@ -3,7 +3,7 @@ import argparse
 import sys
 import traceback
 
-ACTIONS = versy.ACTIONS + ['<new version number>']
+ACTIONS = versy.ACTIONS + ('<new version number>',)
 
 
 def main(args=None):
@@ -20,7 +20,7 @@ def main(args=None):
     try:
         versy.versy(**vars(args))
     except Exception as e:
-        print(e, file=sys.stderr)
+        print('ERROR:', e, file=sys.stderr)
         if args.verbose:
             traceback.print_exc()
         sys.exit(-1)

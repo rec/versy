@@ -27,20 +27,25 @@ def versy(action, changelog, dry_run, message, path, verbose):
         print('Version', version, 'found in', vfile.file)
         return
 
-    cl = ChangeLog(path, str(version), changelog, printer, message)
+    cd = verbose and not dry_run
+    cl = ChangeLog(path, str(version), changelog, printer, message, cd)
 
     if action == 'new':
         cl.new()
         msg = 'Version v%s' % version
-        git.commit([cl.file], msg, dry_run)
+        git.commit([cl.file], msg, dry_run, verbose)
     else:
         new_version = str(semver.bump(version, action))
         cl.update(new_version)
         vfile.write(new_version)
-        print('Version', version, '->', new_version, 'in', vfile.file)
+        if dry_run or verbose:
+            print()
+        print('Version', version, '-->', new_version, 'in', vfile.file)
 
+        if dry_run or verbose:
+            print()
         msg = 'Version v%s' % new_version
-        git.commit([vfile.file, cl.file], msg, dry_run)
+        git.commit([vfile.file, cl.file], msg, dry_run, verbose)
 
 
 @contextlib.contextmanager
@@ -67,4 +72,3 @@ def _dry_printer(file):
 def _printer(file):
     with safer.printer(file) as _print:
         yield _print
-    print('Wrote %s' % file)

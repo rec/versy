@@ -37,14 +37,18 @@ def check_clean_workspace():
         raise ValueError('Cannot create new version with changes in workspace')
 
 
-def commit(files, message, dry_run):
+def commit(files, message, dry_run, verbose):
     for cmd in (
-        ('git', 'add') + tuple(files),
+        ('git', 'add') + tuple(str(f) for f in files),
         ('git', 'commit', '-m', message),
     ):
-        print('$', *cmd)
+        if verbose or dry_run:
+            print('$', *cmd)
         if not dry_run:
-            subprocess.check_output(cmd)
+            if verbose:
+                subprocess.run(cmd).check_returncode()
+            else:
+                subprocess.check_output(cmd)
 
 
 if __name__ == '__main__':
