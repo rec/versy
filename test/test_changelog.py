@@ -9,7 +9,7 @@ class TestChangeLog(TestCase):
         self.results = []
 
     def test_simple(self):
-        with tdir.tdir('setup.py', 'README') as td:
+        with tdir('setup.py', 'README') as td:
             cl = changelog.ChangeLog(td, '0.2.1', None, safer.printer, 'one')
             cl.new()
 

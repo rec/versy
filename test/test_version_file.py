@@ -5,7 +5,7 @@ import tdir
 
 class TestVersionFile(TestCase):
     def test_simple(self):
-        with tdir.tdir(
+        with tdir(
             'setup.py',
             'README',
             'change.txt',
@@ -16,7 +16,7 @@ class TestVersionFile(TestCase):
             assert vf.file.name == 'VERSION'
 
     def test_in_python(self):
-        with tdir.tdir(
+        with tdir(
             'setup.py',
             'README',
             'change.txt',
