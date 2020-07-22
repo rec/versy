@@ -3,6 +3,7 @@ from . import semver
 from .changelog import ChangeLog
 from .version_file import VersionFile
 import contextlib
+import editor
 import functools
 import io
 import myers
@@ -14,7 +15,7 @@ ACTIONS = 'patch', 'minor', 'major', 'new', 'show'
 __version__ = '0.9.1'
 
 
-def versy(action, changelog, dry_run, message, path, verbose):
+def versy(action, changelog, dry_run, message, path, verbose, edit):
     printer = _dry_printer if dry_run else _printer
 
     if not dry_run:
@@ -27,13 +28,13 @@ def versy(action, changelog, dry_run, message, path, verbose):
         print('Version', version, 'found in', vfile.file)
         return
 
-    cd = verbose and not dry_run
-    cl = ChangeLog(path, str(version), changelog, printer, message, cd)
+    vb = verbose and not dry_run
+    cl = ChangeLog(path, version, changelog, printer, message, vb)
+    files = [cl.changelog]
 
     if action == 'new':
         cl.new()
-        msg = 'Version v%s' % version
-        git.commit([cl.file], msg, dry_run, verbose)
+
     else:
         new_version = str(semver.bump(version, action))
         cl.update(new_version)
@@ -44,8 +45,13 @@ def versy(action, changelog, dry_run, message, path, verbose):
 
         if dry_run or verbose:
             print()
-        msg = 'Version v%s' % new_version
-        git.commit([vfile.file, cl.file], msg, dry_run, verbose)
+        files.append(vfile.file)
+
+    if edit and not dry_run:
+        editor(filename=cl.changelog)
+
+    msg = 'Version v%s' % new_version
+    git.commit(files, msg, dry_run, verbose)
 
 
 @contextlib.contextmanager

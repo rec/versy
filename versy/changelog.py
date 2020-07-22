@@ -7,24 +7,24 @@ SUFFIXES = {'', '.rst', '.txt', '.md'}
 
 
 class ChangeLog:
-    def __init__(self, root, version, file, printer, message, verbose=False):
-        self.root = Path(root)
+    def __init__(self, path, version, changelog, printer, message, verbose):
+        self.path = Path(path)
         self.version = version
         self.printer = printer
-        self.file = file
+        self.changelog = changelog
         self.message = message
         self.verbose = verbose
 
-        if not self.file:
+        if not self.changelog:
             files = []
             for name in NAMES:
-                for f in self.root.iterdir():
+                for f in self.path.iterdir():
                     if f.stem == name and f.suffix in SUFFIXES:
                         files.append(f)
             if len(files) > 1:
                 raise ValueError('Multiple changelogs: ' + ' '.join(files))
             if files:
-                self.file = files[0]
+                self.changelog = files[0]
 
     def log(self, *args, **kwds):
         if self.verbose:
@@ -35,36 +35,36 @@ class ChangeLog:
         self.log(' ', *args, **kwds)
 
     def new(self):
-        file = Path(self.file or self.root / NAMES[0])
-        if file.exists():
-            raise ValueError('File %s already exists' % file.absolute())
+        changelog = Path(self.changelog or self.path / NAMES[0])
+        if changelog.exists():
+            raise ValueError('File %s already exists' % changelog.absolute())
 
-        self.log(f'Creating {file}:')
-        with self.printer(file) as self._print:
+        self.log(f'Creating {changelog}:')
+        with self.printer(changelog) as self._print:
             self._entry(self.version, [])
             self.log_print('* %s' % (self.message or 'First release'))
 
-        self.file = file
+        self.changelog = changelog
 
     def update(self, new_version):
-        if not self.file:
-            msg = 'Couldn\'t find a CHANGE file in %s' % self.root
+        if not self.changelog:
+            msg = 'Couldn\'t find a CHANGE file in %s' % self.path
             raise FileNotFoundError(msg)
 
         if self.message:
             messages = [self.message]
         else:
-            messages = git.get_commits(str(self.version), self.root)
+            messages = git.get_commits(str(self.version), self.path)
             messages = messages or [f'New version {self.version}']
 
         printed = False
         needs_empty_line = False
-        with self.printer(self.file) as self._print:
-            print(f'Writing {self.file}')
+        with self.printer(self.changelog) as self._print:
+            print(f'Writing {self.changelog}')
             if self.verbose:
                 print()
-            for line in self.file.read_text().splitlines():
-                if not printed and self.version in line:
+            for line in self.changelog.read_text().splitlines():
+                if not printed and str(self.version) in line:
                     printed = True
                     if needs_empty_line:
                         self._print()
@@ -82,7 +82,7 @@ class ChangeLog:
     def _entry(self, version, messages):
         today = date.today().strftime('%y/%m/%d')
         title = 'v%s - %s' % (version, today)
-        if self.file and self.file.suffix == '.rst':
+        if self.changelog and self.changelog.suffix == '.rst':
             self.log_print(title)
             self.log_print('=' * len(title))
         else:

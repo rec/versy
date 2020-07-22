@@ -1,5 +1,5 @@
 from unittest import TestCase
-from versy import changelog
+from versy.changelog import ChangeLog
 import safer
 import tdir
 
@@ -10,7 +10,7 @@ class TestChangeLog(TestCase):
 
     def test_simple(self):
         with tdir('setup.py', 'README') as td:
-            cl = changelog.ChangeLog(td, '0.2.1', None, safer.printer, 'one')
+            cl = ChangeLog(td, '0.2.1', None, safer.printer, 'one', False)
             cl.new()
 
             actual = (td / 'CHANGELOG').read_text().splitlines()
@@ -18,7 +18,7 @@ class TestChangeLog(TestCase):
             assert expected[0].startswith(expected[0])
             assert actual[1:] == expected[1:]
 
-            cl = changelog.ChangeLog(td, '0.2.1', None, safer.printer, 'two')
+            cl = ChangeLog(td, '0.2.1', None, safer.printer, 'two', False)
 
             with self.assertRaises(ValueError) as m:
                 cl.new()

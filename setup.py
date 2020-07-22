@@ -1,5 +1,3 @@
-from versy import versy
-
 _classifiers = [
     'Development Status :: 4 - Beta',
     'Programming Language :: Python :: 3.5',
@@ -12,6 +10,13 @@ _classifiers = [
     'Topic :: Utilities',
 ]
 
+
+def _version():
+    with open('versy/versy.py') as fp:
+        line = next(i for i in fp if i.startswith('__version__'))
+        return line.strip().split()[-1].strip("'")
+
+
 with open('requirements.txt') as f:
     REQUIRED = f.read().splitlines()
 
@@ -20,7 +25,7 @@ if __name__ == '__main__':
 
     setup(
         name='versy',
-        version=versy.__version__,
+        version=_version(),
         author='Tom Ritchford',
         author_email='tom@swirly.com',
         url='https://github.com/rec/versy',
