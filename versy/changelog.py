@@ -11,7 +11,7 @@ class ChangeLog:
         self.path = Path(path)
         self.version = version
         self.printer = printer
-        self.changelog = changelog
+        self.changelog = changelog and Path(changelog)
         self.message = message
         self.verbose = verbose
 

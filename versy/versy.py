@@ -34,7 +34,8 @@ def versy(action, changelog, dry_run, message, path, verbose, edit):
 
     if action == 'new':
         cl.new()
-        print('First version', version, 'in', vfile.file)
+        print('First version', version, 'to', cl.changelog)
+        new_version = str(version)
 
     else:
         new_version = str(semver.bump(version, action))
@@ -42,7 +43,7 @@ def versy(action, changelog, dry_run, message, path, verbose, edit):
         vfile.write(new_version)
         if dry_run or verbose:
             print()
-        print('Version', version, '-->', new_version, 'in', vfile.file)
+        print('Version', version, '-->', new_version, 'to', cl.changelog)
 
         if dry_run or verbose:
             print()
