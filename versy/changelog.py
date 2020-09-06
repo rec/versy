@@ -7,8 +7,8 @@ SUFFIXES = {'', '.rst', '.txt', '.md'}
 
 
 class ChangeLog:
-    def __init__(self, path, version, changelog, printer, message, verbose):
-        self.path = Path(path)
+    def __init__(self, root, version, changelog, printer, message, verbose):
+        self.root = Path(root)
         self.version = version
         self.printer = printer
         self.changelog = changelog and Path(changelog)
@@ -18,7 +18,7 @@ class ChangeLog:
         if not self.changelog:
             files = []
             for name in NAMES:
-                for f in self.path.iterdir():
+                for f in self.root.iterdir():
                     if f.stem == name and f.suffix in SUFFIXES:
                         files.append(f)
             if len(files) > 1:
@@ -35,7 +35,7 @@ class ChangeLog:
         self.log(' ', *args, **kwds)
 
     def new(self):
-        changelog = Path(self.changelog or self.path / NAMES[0])
+        changelog = Path(self.changelog or self.root / NAMES[0])
         if changelog.exists():
             raise ValueError('File %s already exists' % changelog.absolute())
 
@@ -48,13 +48,13 @@ class ChangeLog:
 
     def update(self, new_version):
         if not self.changelog:
-            msg = 'Couldn\'t find a CHANGE file in %s' % self.path
+            msg = 'Couldn\'t find a CHANGE file in %s' % self.root
             raise FileNotFoundError(msg)
 
         if self.message:
             messages = [self.message]
         else:
-            messages = git.get_commits(str(self.version), self.path)
+            messages = git.get_commits(str(self.version), self.root)
             messages = messages or [f'New version {self.version}']
 
         printed = False

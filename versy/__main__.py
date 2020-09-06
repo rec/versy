@@ -14,7 +14,8 @@ def main(args=None):
     p.add_argument('--dry-run', '-d', action='store_true', help=_DRY_RUN_HELP)
     p.add_argument('--edit', '-e', action='store_true', help=_EDIT_HELP)
     p.add_argument('--message', '-m', help=_MESSAGE_HELP)
-    p.add_argument('--path', '-p', default='.', help=_PATH_HELP)
+    p.add_argument('--push', '-p', action='store_true', help=_PUSH_HELP)
+    p.add_argument('--root', '-r', default='.', help=_ROOT_HELP)
     p.add_argument('--verbose', '-v', action='store_true', help=_VERBOSE_HELP)
 
     args = p.parse_args(args)
@@ -32,7 +33,8 @@ _ACTIONS_HELP = 'Actions are: ' + ', '.join(ACTIONS)
 _CHANGELOG_HELP = 'Specify the name of a new change log'
 _EDIT_HELP = 'Bring up the change log in an editor'
 _MESSAGE_HELP = 'Set change log message'
-_PATH_HELP = 'Root directory to search for a version number'
+_ROOT_HELP = 'Root directory to search for a version number'
+_PUSH_HELP = 'git push after committing changes'
 _VERBOSE_HELP = 'Print more stuff'
 _DRY_RUN_HELP = 'Don\'t actually make the changes, just print the diffs'
 

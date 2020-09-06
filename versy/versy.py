@@ -15,13 +15,13 @@ ACTIONS = 'patch', 'minor', 'major', 'new', 'show'
 __version__ = '0.9.2'
 
 
-def versy(action, changelog, dry_run, message, path, verbose, edit):
+def versy(action, changelog, dry_run, message, root, verbose, edit, push):
     printer = _dry_printer if dry_run else _printer
 
     if not dry_run:
         git.check_clean_workspace()
 
-    vfile = VersionFile(path, printer)
+    vfile = VersionFile(root, printer)
     version = semver.semver(vfile.version)
 
     if action == 'show':
@@ -29,7 +29,7 @@ def versy(action, changelog, dry_run, message, path, verbose, edit):
         return
 
     vb = verbose and not dry_run
-    cl = ChangeLog(path, version, changelog, printer, message, vb)
+    cl = ChangeLog(root, version, changelog, printer, message, vb)
     files = [cl.changelog]
 
     if action == 'new':
@@ -53,7 +53,7 @@ def versy(action, changelog, dry_run, message, path, verbose, edit):
         editor(filename=cl.changelog)
 
     msg = 'Version v%s' % new_version
-    git.commit(files, msg, dry_run, verbose)
+    git.commit(files, msg, dry_run, verbose, push)
 
 
 @contextlib.contextmanager
