@@ -1,3 +1,4 @@
+from pathlib import Path
 import wolk
 
 PREFIX = '__version__ = '
@@ -10,6 +11,7 @@ class VersionFile:
 
         results = []
         for file in wolk.python(root):
+            file = Path(file)
             if file.name == VERSION:
                 version = file.read_text().strip()
             elif file.suffix == '.py':
