@@ -1,4 +1,4 @@
-from versy import versy
+from . import versy
 import argparse
 import sys
 import traceback
@@ -7,6 +7,16 @@ ACTIONS = versy.ACTIONS + ('<new version number>',)
 
 
 def main(args=None):
+    try:
+        versy.versy(**parse(args))
+    except Exception as e:
+        print('ERROR:', e, file=sys.stderr)
+        if args.verbose:
+            traceback.print_exc()
+        sys.exit(-1)
+
+
+def parse(args=None):
     p = argparse.ArgumentParser(description=_DESCRIPTION)
 
     p.add_argument('action', nargs='?', default='show', help=_ACTIONS_HELP)
@@ -18,14 +28,11 @@ def main(args=None):
     p.add_argument('--root', '-r', default='.', help=_ROOT_HELP)
     p.add_argument('--verbose', '-v', action='store_true', help=_VERBOSE_HELP)
 
-    args = p.parse_args(args)
-    try:
-        versy.versy(**vars(args))
-    except Exception as e:
-        print('ERROR:', e, file=sys.stderr)
-        if args.verbose:
-            traceback.print_exc()
-        sys.exit(-1)
+    return vars(p.parse_args(args))
+
+
+def run(**kwargs):
+    versy.versy(**dict(parse([]), kwargs))
 
 
 _DESCRIPTION = 'Update the version number and change log of the program'
