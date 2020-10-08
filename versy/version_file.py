@@ -6,29 +6,27 @@ VERSION = 'VERSION'
 
 
 class VersionFile:
-    def __init__(self, root, printer):
+    def __init__(self, root, printer, file=None):
         self.printer = printer
+        if file:
+            self.file = Path(file)
+            self.version = _get_version(self.file)
+        else:
+            results = []
+            for f in wolk.python(root):
+                f = Path(f)
+                version = _get_version(f)
+                if version:
+                    results.append((f, version))
 
-        results = []
-        for file in wolk.python(root):
-            file = Path(file)
-            if file.name == VERSION:
-                version = file.read_text().strip()
-            elif file.suffix == '.py':
-                version = _get_version(file)
-            else:
-                version = None
-            if version:
-                results.append((file, version))
+            if not results:
+                raise ValueError('No version files found')
 
-        if not results:
-            raise ValueError('No version files found')
+            if len(results) > 1:
+                res = ', '.join('{1} in {0}'.format(*r) for r in results)
+                raise ValueError('More than one version file found: ' + res)
 
-        if len(results) > 1:
-            res = ', '.join('{1} in {0}'.format(*r) for r in results)
-            raise ValueError('More than one version file found: ' + res)
-
-        self.file, self.version = results[0]
+            self.file, self.version = results[0]
 
     def write(self, version):
         with self.printer(self.file) as _print:
@@ -42,8 +40,13 @@ class VersionFile:
                     _print(line)
 
 
-def _get_version(file):
-    lines = [s for s in file.read_text().splitlines() if s.startswith(PREFIX)]
+def _get_version(f):
+    if f.name == VERSION:
+        return f.read_text().strip()
+    if f.suffix != '.py':
+        return
+
+    lines = [s for s in f.read_text().splitlines() if s.startswith(PREFIX)]
 
     if not lines:
         return

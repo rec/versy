@@ -23,6 +23,7 @@ def parse(args=None):
     p.add_argument('--changelog', '-c', default=None, help=_CHANGELOG_HELP)
     p.add_argument('--dry-run', '-d', action='store_true', help=_DRY_RUN_HELP)
     p.add_argument('--edit', '-e', action='store_true', help=_EDIT_HELP)
+    p.add_argument('--file', '-f', default=None, help=_FILE_HELP)
     p.add_argument('--message', '-m', help=_MESSAGE_HELP)
     p.add_argument('--push', '-p', action='store_true', help=_PUSH_HELP)
     p.add_argument('--root', '-r', default='.', help=_ROOT_HELP)
@@ -39,6 +40,7 @@ _DESCRIPTION = 'Update the version number and change log of the program'
 _ACTIONS_HELP = 'Actions are: ' + ', '.join(ACTIONS)
 _CHANGELOG_HELP = 'Specify the name of a new change log'
 _EDIT_HELP = 'Bring up the change log in an editor'
+_FILE_HELP = 'Specify the file containing __version__'
 _MESSAGE_HELP = 'Set change log message'
 _ROOT_HELP = 'Root directory to search for a version number'
 _PUSH_HELP = 'git push after committing changes'

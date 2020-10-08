@@ -15,13 +15,15 @@ ACTIONS = 'patch', 'minor', 'major', 'new', 'show'
 __version__ = '0.9.5'
 
 
-def versy(action, changelog, dry_run, message, root, verbose, edit, push):
+def versy(
+    action, changelog, dry_run, file, message, root, verbose, edit, push
+):
     printer = _dry_printer if dry_run else _printer
 
     if not dry_run:
         git.check_clean_workspace()
 
-    vfile = VersionFile(root, printer)
+    vfile = VersionFile(root, printer, file)
     version = semver.semver(vfile.version)
 
     if action == 'show':
