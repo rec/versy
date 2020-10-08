@@ -1,3 +1,8 @@
+## v0.9.6 - 20/10/08
+
+* Fix an error in error handling
+* Add new --file argument
+
 ## v0.9.5 - 20/10/08
 
 * Start to expose versy API

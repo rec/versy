@@ -12,7 +12,7 @@ import safer
 PREFIX = '__version__ = '
 VERSION = 'VERSION'
 ACTIONS = 'patch', 'minor', 'major', 'new', 'show'
-__version__ = '0.9.5'
+__version__ = '0.9.6'
 
 
 def versy(
