@@ -6,17 +6,18 @@ import traceback
 ACTIONS = versy.ACTIONS + ('<new version number>',)
 
 
-def main(args=None):
+def main(argv=None):
+    args = parse(argv)
     try:
-        versy.versy(**parse(args))
+        versy.versy(**args)
     except Exception as e:
         print('ERROR:', e, file=sys.stderr)
-        if args.verbose:
+        if args['verbose']:
             traceback.print_exc()
         sys.exit(-1)
 
 
-def parse(args=None):
+def parse(argv=None):
     p = argparse.ArgumentParser(description=_DESCRIPTION)
 
     p.add_argument('action', nargs='?', default='show', help=_ACTIONS_HELP)
@@ -29,7 +30,7 @@ def parse(args=None):
     p.add_argument('--root', '-r', default='.', help=_ROOT_HELP)
     p.add_argument('--verbose', '-v', action='store_true', help=_VERBOSE_HELP)
 
-    return vars(p.parse_args(args))
+    return vars(p.parse_args(argv))
 
 
 def run(**kwargs):
