@@ -23,7 +23,7 @@ def versy(
     if not dry_run:
         git.check_clean_workspace()
 
-    vfile = VersionFile(root, printer, file)
+    vfile = VersionFile(root, printer, version_file=file)
     version = semver.semver(vfile.version)
 
     if action == 'show':
