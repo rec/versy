@@ -12,6 +12,7 @@ class TestVersionFile(TestCase):
             sub={'bar': 'one', 'VERSION': '0.1.2'},
         ) as td:
             vf = version_file.VersionFile(td, None)
+            print('??', vf.version, vf.file)
             assert vf.version == '0.1.2'
             assert vf.file.name == 'VERSION'
 

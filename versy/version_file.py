@@ -1,6 +1,6 @@
 from pathlib import Path
 import json
-import wolk
+import stroll
 
 PREFIX = '__version__ = '
 VERSION = 'VERSION'
@@ -10,7 +10,7 @@ DOTFILE = '.versy.json'
 class VersionFile:
     def __init__(self, root, printer, version_file=None):
         self.printer = printer
-        self.file, self.version = _get_version(version_file, root)
+        self.file, self.version = get_version_file(version_file, root)
 
     def write(self, version):
         with self.printer(self.file) as print:
@@ -24,17 +24,18 @@ class VersionFile:
                 print(line)
 
 
-def _get_version(version_file, root):
+def get_version_file(version_file, root):
     if not version_file:
         df = Path(root) / DOTFILE
         if df.exists():
             version_file = json.loads(df.read_text()).get('version_file')
-    files = [version_file] if version_file else wolk.python(root)
+    if version_file:
+        files = [Path(version_file)]
+    else:
+        files = stroll.python(root)
 
     results = []
     for f in files:
-        f = Path(f)
-
         if f.name == VERSION:
             results.append((f, f.read_text().strip()))
 
