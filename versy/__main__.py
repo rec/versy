@@ -37,7 +37,10 @@ def run(**kwargs):
     versy.versy(**dict(parse([]), kwargs))
 
 
-_DESCRIPTION = 'Update the version number and change log of the program'
+_DESCRIPTION = """
+Automatically update the version number and change log for a Python repository
+"""
+
 _ACTIONS_HELP = 'Actions are: ' + ', '.join(ACTIONS)
 _CHANGELOG_HELP = 'Specify the name of a new change log'
 _EDIT_HELP = 'Bring up the change log in an editor'
