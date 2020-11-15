@@ -16,7 +16,7 @@ def bump(version, action):
     if action == 'major':
         return version.bump_major()
     try:
-        v = _semver(action)
+        v = semver(action)
     except ValueError:
         raise ValueError('Unknown action %s' % action)
 
