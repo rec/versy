@@ -1,3 +1,7 @@
+## v1.0.2 - 20/11/15
+
+* Fix issue when reading new version number
+
 ## v1.0.1 - 20/11/07
 
 * Update setup.py to Production/Stable
